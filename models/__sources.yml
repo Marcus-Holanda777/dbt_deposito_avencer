@@ -1,0 +1,23 @@
+version: 2
+
+sources:
+  - name: modelled
+    schema: modelled
+    description: Bases brutas do deposito Avencer
+    tables:
+      - name: cosmos_v14b_dbo_produto_deposito
+        description: Deposito e saldo de estoque do produto
+      - name: cosmos_v14b_dbo_produto_mestre
+        description: Informacoes base dos produtos
+      - name: cosmos_v14b_dbo_nota_entr_cab
+        description: Cabecalho das notas de entrada
+      - name: cosmos_v14b_dbo_nota_entr_det
+        description: Detalhe das notas de entrada
+      - name: cosmos_v14b_dbo_nota_entr_lote
+        description: Lotes das notas de entrada
+  
+  - name: planejamento_comercial
+    schema: planejamento_comercial
+    description: Bases do setor comercial, informacao dos fornecedor comercial
+    tables:
+      - name: dim_produtos
