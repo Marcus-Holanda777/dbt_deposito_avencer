@@ -25,7 +25,7 @@ final as (
     from renamed
     where
         deposito_id != 101
-        and prdp_qt_estoqatual > 0
+        and quantidade_estoque_atual > 0
 )
 
 select * from final

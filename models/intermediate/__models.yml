@@ -1,0 +1,5 @@
+version: 2
+
+models:
+  - name: init_entrada_deposito
+  - name: init_estoque_deposito

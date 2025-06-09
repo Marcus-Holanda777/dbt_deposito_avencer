@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: stg_estoque_deposito
+    description: Tratamento das bases de estoque do deposito
+  
+  - name: stg_estoque_reservado
+    description: Estoque reservado para devolucao, avaria e vencidos
+  
+  - name: stg_produto_baixo_giro
+    description: Produtos com baixo giro, com base no estoque e vendas
+  
+  - name: stg_base_lotes
+    description: Retorna lotes somente se a quantidade for maior que zero
+  
+  - name: stg_entrada_deposito
+    description: Produtos com entrada no CD
