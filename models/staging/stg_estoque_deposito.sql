@@ -4,7 +4,7 @@ with produto_deposito as (
         prme_cd_produto,
         prdp_vl_cmpcsicms,
         prdp_qt_estoqatual
-    from {{ source('modelled', 'cosmos_v14b_dbo_produto_deposito') }}
+    from {{ source('prevencao-perdas', 'cosmos_v14b_dbo_produto_deposito') }}
 ),
 
 renamed as (

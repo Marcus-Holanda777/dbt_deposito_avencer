@@ -15,3 +15,12 @@ models:
   
   - name: stg_entrada_deposito
     description: Produtos com entrada no CD
+  
+  - name: stg_shelf_life
+    description: Shelf life dos produtos
+
+  - name: stg_filial_deposito
+    description: Relacao entre filial e deposito
+  
+  - name: stg_vendas_filial
+    description: Vendas por filial, dia

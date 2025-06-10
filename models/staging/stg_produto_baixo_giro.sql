@@ -2,7 +2,7 @@ with produto_baixo_giro as (
     select
         prme_cd_produto,
         prme_dias_validade
-    from {{ source('modelled', 'cosmos_v14b_dbo_produto_mestre') }}
+    from {{ source('prevencao-perdas', 'cosmos_v14b_dbo_produto_mestre') }}
 ),
 
 renamed as (

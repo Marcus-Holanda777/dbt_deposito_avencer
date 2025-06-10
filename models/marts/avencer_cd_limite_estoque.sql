@@ -32,6 +32,7 @@ filtro_limite_minimo as (
 select
     deposito_id,
     produto_id,
+    shelf_life_days,
     valor_custo_sicms,
     numero_nota_fiscal,
     quantidade_estoque_atual,
