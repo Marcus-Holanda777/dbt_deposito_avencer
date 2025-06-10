@@ -10,7 +10,7 @@ with entrada_deposito as (
         det.nede_qt_entrada
     from {{ source('modelled', 'cosmos_v14b_dbo_nota_entr_det') }} as det
     inner join {{ source('modelled', 'cosmos_v14b_dbo_nota_entr_cab') }} as cab
-        on det.nede_sq_notafiscal = cab.neca_sq_notafiscal
+        on det.neca_sq_notafiscal = cab.neca_sq_notafiscal
 ),
 
 renamed as (

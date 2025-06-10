@@ -1,3 +1,12 @@
+{{
+    config(
+        materialized='table',
+        table_type='iceberg',
+        format='parquet',
+        write_compression='zstd',
+    )
+}}
+
 with representa_estoque as (
     select
         dep.deposito_id,
@@ -59,15 +68,15 @@ soma_acumulada as (
 )
 
 select
-    final.deposito_id,
-    final.produto_id,
-    final.valor_custo_sicms,
-    final.numero_nota_fiscal,
-    final.quantidade_estoque_atual,
-    final.quantidade_fisica,
-    final.media_estoque,
-    final.id_grupo,
-    final.soma,
-    CAST(final.data_hora_atualizacao as TIMESTAMP (3)) as data_hora_atualizacao,
-    CAST(final.data_vencimento_lote as TIMESTAMP (3)) as data_vencimento_lote
-from soma_acumulada as final
+    deposito_id,
+    produto_id,
+    valor_custo_sicms,
+    numero_nota_fiscal,
+    quantidade_estoque_atual,
+    quantidade_fisica,
+    media_estoque,
+    id_grupo,
+    soma,
+    CAST(data_hora_atualizacao as TIMESTAMP (3)) as data_hora_atualizacao,
+    CAST(data_vencimento_lote as TIMESTAMP (3)) as data_vencimento_lote
+from soma_acumulada

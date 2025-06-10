@@ -1,9 +1,9 @@
 with base_lotes as (
     select
-        lt.neca_sq_notafiscal,
-        lt.nede_sq_detnf,
-        lt.nelo_dt_venclote,
-        lt.nelo_qt_lote
+        neca_sq_notafiscal,
+        nede_sq_detnf,
+        nelo_dt_venclote,
+        nelo_qt_lote
     from {{ source('modelled', 'cosmos_v14b_dbo_nota_entr_lote') }}
 ),
 
