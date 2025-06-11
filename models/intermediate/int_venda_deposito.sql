@@ -13,7 +13,7 @@ final as (
     select
         deposito_id,
         produto_id,
-        sum(quantidade_venda_diaria) as quantidade_venda_diaria
+        SUM(quantidade_venda_diaria) as quantidade_venda_diaria
     from vendas_deposito
     group by
         deposito_id,
