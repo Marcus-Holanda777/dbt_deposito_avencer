@@ -58,31 +58,64 @@ menor_dia as (
     from calculo_pme
 ),
 
-add_dias_consumo_acumulado as (
+add_dias_consumo_anterior as (
     select
         *,
         SUM(dias_consumo) over (
             partition by deposito_id, produto_id
             order by data_vencimento_lote asc
-        ) as dias_consumo_acumulado
+            rows between unbounded preceding and 1 preceding
+        ) as dias_consumo_anterior
     from menor_dia
 ),
 
-add_data_fim_estoque as (
+-- Etapa 4: Calcula quanto o lote pode consumir agora, baseado nos dias restantes
+consumo_ajustado as (
     select
         *,
-        DATE_ADD('day', CAST(dias_consumo_acumulado as INT), CURRENT_DATE)
-            as data_fim_estoque
-    from add_dias_consumo_acumulado
+        COALESCE(dias_consumo_anterior, 0) as dias_acumulados,
+
+        -- Dias restantes permitidos, descontando os dias já consumidos
+        GREATEST(
+            dias_ate_recolhimento - COALESCE(dias_consumo_anterior, 0),
+            0
+        ) as dias_restantes_disponiveis,
+
+        -- Dias finais de consumo possíveis neste lote
+        LEAST(
+            pme_dias,
+            GREATEST(
+                dias_ate_recolhimento - COALESCE(dias_consumo_anterior, 0),
+                0
+            )
+        ) as dias_consumo_final
+    from add_dias_consumo_anterior
 ),
 
-final as (
+-- Etapa 5: Monta o resultado final com datas de início, fim e saldo
+distribuicao_final as (
     select
         *,
-        dias_consumo * quantidade_venda_diaria as quantidade_consumida,
+
+        -- Quando o lote começa a ser usado
+        DATE_ADD('day', CAST(dias_acumulados as INT), CURRENT_DATE)
+            as data_inicio_lote,
+
+        -- Quando o lote termina (ou para de ser usado)
+        DATE_ADD(
+            'day',
+            CAST(dias_acumulados + dias_consumo_final as INT),
+            CURRENT_DATE
+        )
+            as data_fim_lote,
+
+        -- Quantidade consumida nesse período
+        dias_consumo_final * quantidade_venda_diaria as quantidade_consumida,
+
+        -- O que sobrou no lote (por falta de tempo ou demanda)
         quantidade_distribuida
-        - (dias_consumo * quantidade_venda_diaria) as saldo_restante
-    from add_data_fim_estoque
+        - (dias_consumo_final * quantidade_venda_diaria) as saldo_restante
+    from consumo_ajustado
 )
 
 select
@@ -102,11 +135,14 @@ select
     pme_dias,
     dias_ate_recolhimento,
     dias_consumo,
-    dias_consumo_acumulado,
+    dias_acumulados,
+    dias_restantes_disponiveis,
+    dias_consumo_final,
     quantidade_consumida,
     saldo_restante,
     CAST(data_hora_atualizacao as TIMESTAMP (3)) as data_hora_atualizacao,
     CAST(data_vencimento_lote as TIMESTAMP (3)) as data_vencimento_lote,
     CAST(data_recolhimento as TIMESTAMP (3)) as data_recolhimento,
-    CAST(data_fim_estoque as TIMESTAMP (3)) as data_fim_estoque
-from final
+    CAST(data_inicio_lote as TIMESTAMP (3)) as data_inicio_lote,
+    CAST(data_fim_lote as TIMESTAMP (3)) as data_fim_lote
+from distribuicao_final
