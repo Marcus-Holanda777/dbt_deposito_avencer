@@ -39,14 +39,6 @@ filtro_distribuicao as (
     select *
     from distribuicao_lotes
     where quantidade_distribuida > 0
-),
-
-add_data_recolhimento as (
-    select
-        *,
-        DATE_ADD('day', -shelf_life_days, data_vencimento_lote)
-            as data_recolhimento
-    from filtro_distribuicao
 )
 
 select
@@ -63,6 +55,5 @@ select
     soma_acumulada,
     quantidade_distribuida,
     CAST(data_hora_atualizacao as TIMESTAMP (3)) as data_hora_atualizacao,
-    CAST(data_vencimento_lote as TIMESTAMP (3)) as data_vencimento_lote,
-    CAST(data_recolhimento as TIMESTAMP (3)) as data_recolhimento
-from add_data_recolhimento
+    CAST(data_vencimento_lote as TIMESTAMP (3)) as data_vencimento_lote
+from filtro_distribuicao
