@@ -5,8 +5,9 @@ import numpy as np
 from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import os
+from dotenv import dotenv_values
 
-
+CONFIG = {**dotenv_values()}
 MAX_WORKERS = int(os.cpu_count() / 2)
 
 
@@ -115,22 +116,24 @@ def download_avencer_athena() -> pd.DataFrame:
 
     """
     cursor = CursorParquetDuckdb(
-        "s3://out-of-lake-pmenos-query-results/", result_reuse_enable=True
+        CONFIG.get("s3_stanging_dir"), result_reuse_enable=True
     )
 
     with Athena(cursor) as client:
         client.execute(
-            """
+            f"""
             select
                 deposito_id,
                 produto_id,
+                numero_nota_fiscal,
                 shelf_life_days,
                 valor_custo_sicms,
                 quantidade_estoque_atual,
                 quantidade_distribuida,
                 quantidade_venda_diaria,
+                CAST(data_hora_atualizacao as TIMESTAMP(3)) as data_hora_atualizacao,
                 CAST(data_vencimento_lote as TIMESTAMP (3)) as data_vencimento_lote
-            from "prevencao-perdas".avencer_cd_venda_media
+            from "{CONFIG.get("schema")}".{CONFIG.get("table_name_ref")}
             """
         )
 
@@ -142,8 +145,8 @@ def update_avencer_athena(
 ) -> None:
     """
     Atualiza a tabela de vencimento de lotes no Athena com os dados processados.
-    Esta função escreve um DataFrame no Athena, substituindo a tabela existente ou criando uma nova,
-    dependendo do parâmetro `if_exists`. A tabela é escrita no local especificado no S3.
+    Esta função escreve um DataFrame no Athena, substituindo a tabela existente ou criando uma nova.
+    A tabela é escrita no local especificado no S3.
 
     Args:
         df (pd.DataFrame): DataFrame contendo os dados processados de vencimento de lotes.
@@ -160,7 +163,7 @@ def update_avencer_athena(
     """
 
     cursor = CursorParquetDuckdb(
-        "s3://out-of-lake-pmenos-query-results/", result_reuse_enable=True
+        CONFIG.get("s3_stanging_dir"), result_reuse_enable=True
     )
 
     with Athena(cursor) as client:
@@ -173,8 +176,11 @@ def update_avencer_athena(
 
 
 if __name__ == "__main__":
+    df_original = download_avencer_athena()
+    print(f"Totais origem: {df_original.shape} ...")
+
     with ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        group_avencer = groupby_avencer(download_avencer_athena())
+        group_avencer = groupby_avencer(df_original)
         futuros = [executor.submit(pipe_avencer, group) for group in group_avencer]
 
         dfs = []
@@ -182,9 +188,12 @@ if __name__ == "__main__":
             dfs.append(future.result())
 
     # NOTE: Envia os dados pro ATHENA
+    df_to = pd.concat(dfs, ignore_index=True)
+    print(f"Totais destino: {df_to.shape}")
+
     update_avencer_athena(
-        pd.concat(dfs, ignore_index=True),
-        table_name=(table_name := "avencer_cd_dataframe"),
-        location=f"s3://out-of-lake-prevencao-perdas/tables/{table_name}/",
-        schema="prevencao-perdas",
+        df_to,
+        table_name=(table_name := CONFIG.get("table_name")),
+        location=f"{CONFIG.get('location')}{table_name}/",
+        schema=CONFIG.get("schema"),
     )
