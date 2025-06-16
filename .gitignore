@@ -1,6 +1,7 @@
 target/
 dbt_packages/
 logs/
+duckdb_home/
 *.duckdb
 __pycache__/
 *.env
