@@ -111,7 +111,8 @@ def download_avencer_athena() -> pd.DataFrame:
     Baixa os dados de vencimento de lotes do Athena e retorna um DataFrame.
     Esta função utiliza o cliente Athena para executar uma consulta SQL que recupera
     informações sobre os lotes de produtos, incluindo ID do depósito, ID do produto,
-    vida útil, custo, quantidade em estoque, quantidade distribuída, venda diária e data de vencimento do lote.
+    numero da nota fiscal, data da entrada do lote, vida útil, custo,
+    quantidade em estoque, quantidade distribuída, venda diária e data de vencimento do lote.
 
     Args:
         None
