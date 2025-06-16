@@ -13,26 +13,39 @@ MAX_WORKERS = int(os.cpu_count() / 2)
 
 def pipe_avencer(group: DataFrameGroupBy) -> pd.DataFrame:
     """
-    Processa os dados de vencimento de lotes para calcular o consumo acumulado e as datas de início e fim do lote.
-    Esta função recebe um grupo de dados agrupados por depósito e produto, e calcula:
+    Simula o consumo sequencial de lotes de produtos distribuídos, respeitando a data-limite de recolhimento
+    e a estimativa de dias de consumo (PME), a fim de calcular a janela de consumo de cada lote.
 
-    - Dias acumulados desde o início do lote.
-    - Dias de consumo final para cada lote.
-    - Data de início e fim do lote.
-    - Quantidade consumida e saldo restante.
+    Esta função é aplicada a um grupo de dados (agrupados por depósito e produto), e calcula, para cada lote:
 
-    O resultado é um DataFrame com as colunas adicionais calculadas.
+    - Quantos dias já foram utilizados antes de consumir o lote atual (`dias_acumulados`);
+    - Quantos dias o lote pode ser consumido efetivamente, respeitando:
+        - o limite de consumo (`pme_dias`) e
+        - o prazo máximo permitido (`dias_ate_recolhimento`);
+    - A data de início e fim do consumo do lote, a partir da data atual;
+    - A quantidade efetivamente consumida do lote e o saldo restante.
+
+    ### Lógica detalhada:
+        - Para cada linha (lote), simula-se o consumo a partir de hoje, somando os dias de consumo anteriores (`acumulado`).
+        - O número de dias disponíveis para consumir o lote é calculado como:
+              dias_restantes = max(dias_ate_recolhimento - acumulado, 0)
+        - O número de dias que será realmente usado para consumo do lote é:
+              consumo_final = min(pme_dias, dias_restantes)
+        - O consumo termina se o total de dias acumulados alcançar ou ultrapassar `dias_ate_recolhimento`.
+
+    ### Fórmulas calculadas:
+        - `dias_acumulados`: dias somados antes do início de consumo deste lote.
+        - `dias_consumo_final`: dias que o lote será consumido efetivamente.
+        - `data_inicio_lote`: hoje + dias_acumulados.
+        - `data_fim_lote`: data_inicio_lote + dias_consumo_final.
+        - `quantidade_consumida`: dias_consumo_final * quantidade_venda_diaria.
+        - `saldo_restante`: quantidade_distribuida - quantidade_consumida.
 
     Args:
-        group (DataFrameGroupBy): Grupo de dados agrupados por depósito e produto.
+        group (DataFrameGroupBy): Grupo de dados agrupado por depósito e produto.
 
     Returns:
-        pd.DataFrame: DataFrame com as colunas adicionais calculadas.
-
-    Example:
-        >>> df = download_avencer_athena()
-        >>> grouped = groupby_avencer(df)
-        >>> result = grouped.apply(pipe_avencer).reset_index(drop=True)
+        pd.DataFrame: DataFrame com colunas adicionais representando o consumo simulado por lote.
     """
 
     df: pd.DataFrame
@@ -74,12 +87,8 @@ def groupby_avencer(df: pd.DataFrame) -> DataFrameGroupBy:
 
     Returns:
         DataFrameGroupBy[tuple]: Objeto de agrupamento por depósito e produto.
-
-    Example:
-        >>> df = download_avencer_athena()
-        >>> grouped = groupby_avencer(df)
-        >>> result = grouped.apply(pipe_avencer).reset_index(drop=True)
     """
+
     return (
         df.assign(
             data_recolhimento=lambda _: _.data_vencimento_lote
@@ -109,12 +118,8 @@ def download_avencer_athena() -> pd.DataFrame:
 
     Returns:
         pd.DataFrame: DataFrame contendo os dados de vencimento de lotes.
-
-    Example:
-        >>> df = download_avencer_athena()
-        >>> print(df.head())
-
     """
+
     cursor = CursorParquetDuckdb(
         CONFIG.get("s3_stanging_dir"), result_reuse_enable=True
     )
@@ -156,10 +161,6 @@ def update_avencer_athena(
 
     Returns:
         None
-
-    Example:
-        >>> df = download_avencer_athena()
-        >>> update_avencer_athena(df, "avencer_cd_venda_media_processed", "s3://my-bucket/avencer/", "prevencao-perdas")
     """
 
     cursor = CursorParquetDuckdb(
