@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: avencer_cd_representa_estoque
+    description: > 
+      Modelo que consolida o estoque atual por depósito e produto com base nas
+      entradas mais recentes, relacionando cada lote à sua validade e à proporção
+      de estoque que ele representa. A lógica permite simulações de consumo e análise
+      de risco de vencimento com base na soma acumulada das proporções de estoque.
+
+  - name: avencer_cd_limite_estoque
+    description: >
+      Modelo que filtra os lotes de estoque por produto e depósito,
+      mantendo apenas aqueles necessários para cobrir 100% do estoque
+      atual. A filtragem é feita com base na soma acumulada das proporções
+      de estoque por lote (`soma > 100%`) e mantém apenas os lotes até o limite
+      necessário (`id_grupo <= limite`). Ideal para análises de consumo, validade
+      e prevenção de vencimento.
+
+  - name: avencer_cd_distribuicao
+    description: >
+      Modelo que simula a distribuição do estoque disponível entre os lotes de produto
+      em um depósito, priorizando os com vencimento mais distante. Utiliza soma acumulada
+      para alocar a quantidade total disponível (`quantidade_estoque_atual`) proporcionalmente,
+      e remove lotes excedentes. Serve como base para análises de risco de vencimento, giro
+      de estoque e consumo ideal.
+
+
+  - name: avencer_cd_venda_media
+    description: >
+      Modelo que adiciona a média diária de vendas dos últimos 90 dias para cada
+      produto e depósito, combinando com a distribuição de estoque por lote.
+      Fundamental para cálculo do Prazo Médio de Estoque (PME) e análises de consumo
+      baseado no histórico real de vendas.

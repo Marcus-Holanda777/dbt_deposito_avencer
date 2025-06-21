@@ -1,5 +1,20 @@
 version: 2
 
 models:
-  - name: int_entrada_deposito
   - name: int_estoque_deposito
+    description: >
+      Modelo que consolida o estoque disponível por depósito e produto,
+      subtraindo as quantidades reservadas e incorporando a informação
+      de shelf life para cada produto.
+  
+  - name: int_entrada_deposito
+    description: >
+      Modelo que consolida as entradas no depósito (compras dos fornecedores),
+      relacionando lotes, definindo datas de vencimento e ajustando quantidades
+      para refletir corretamente a quantidade física disponível por lote.
+
+  - name: int_venda_deposito
+    description: >
+      Modelo que consolida a média diária de vendas dos últimos 90 dias de produtos,
+      agregando as vendas das filiais para o nível de depósito. Essa média é usada
+      para análises de consumo, planejamento e cálculo do prazo médio de estoque.
