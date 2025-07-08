@@ -11,7 +11,7 @@ with vendas_base as (
     select
         acd.deposito_id,
         acd.produto_id,
-        acd.shelf_life_days,
+        acd.shelf_life_months,
         acd.valor_custo_sicms,
         acd.numero_nota_fiscal,
         acd.quantidade_estoque_atual,
@@ -34,7 +34,7 @@ with vendas_base as (
 select
     deposito_id,
     produto_id,
-    shelf_life_days,
+    shelf_life_months,
     valor_custo_sicms,
     numero_nota_fiscal,
     quantidade_estoque_atual,

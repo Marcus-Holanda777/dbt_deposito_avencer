@@ -44,7 +44,7 @@ filtro_distribuicao as (
 select
     deposito_id,
     produto_id,
-    shelf_life_days,
+    shelf_life_months,
     valor_custo_sicms,
     numero_nota_fiscal,
     quantidade_estoque_atual,

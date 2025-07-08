@@ -91,8 +91,12 @@ def groupby_avencer(df: pd.DataFrame) -> DataFrameGroupBy:
 
     return (
         df.assign(
-            data_recolhimento=lambda _: _.data_vencimento_lote
-            - pd.to_timedelta(_.shelf_life_days, unit="days"),
+            date_off_set=lambda _: _.shelf_life_months.map(
+                lambda m: pd.DateOffset(months=m)
+            ),
+            data_recolhimento=lambda _: _.apply(
+                lambda _: _.data_vencimento_lote - _.date_off_set, axis=1
+            ),
             dias_ate_recolhimento=lambda _: (
                 _.data_recolhimento - pd.to_datetime("today").normalize()
             ).dt.days,
@@ -101,6 +105,7 @@ def groupby_avencer(df: pd.DataFrame) -> DataFrameGroupBy:
             ).replace(np.inf, 3600),
             dias_consumo=lambda _: _[["pme_dias", "dias_ate_recolhimento"]].min(axis=1),
         )
+        .drop(["date_off_set"], axis=1)
         .sort_values(["deposito_id", "produto_id", "data_vencimento_lote"])
         .groupby(["deposito_id", "produto_id"])
     )
@@ -133,7 +138,7 @@ def download_avencer_athena() -> pd.DataFrame:
                 produto_id,
                 id_grupo,
                 numero_nota_fiscal,
-                shelf_life_days,
+                shelf_life_months,
                 valor_custo_sicms,
                 quantidade_estoque_atual,
                 quantidade_fisica,

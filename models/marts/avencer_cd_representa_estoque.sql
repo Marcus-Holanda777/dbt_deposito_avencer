@@ -11,7 +11,7 @@ with representa_estoque as (
     select
         dep.deposito_id,
         dep.produto_id,
-        dep.shelf_life_days,
+        dep.shelf_life_months,
         ent.numero_nota_fiscal,
         dep.valor_custo_sicms,
         CAST(dep.quantidade_estoque_atual as INT) as quantidade_estoque_atual,
@@ -71,7 +71,7 @@ soma_acumulada as (
 select
     deposito_id,
     produto_id,
-    shelf_life_days,
+    shelf_life_months,
     valor_custo_sicms,
     numero_nota_fiscal,
     quantidade_estoque_atual,
