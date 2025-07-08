@@ -20,8 +20,8 @@ renamed as (
 final as (
     select
         produto_id,
-        case when shelf_life_category_id in (4, 7) then 60 else 90 end
-            as shelf_life_days
+        case when shelf_life_category_id in (4, 7) then 2 else 3 end
+            as shelf_life_months
     from renamed
 )
 

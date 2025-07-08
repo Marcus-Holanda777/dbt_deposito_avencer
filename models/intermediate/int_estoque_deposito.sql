@@ -2,7 +2,7 @@ with estoque as (
     select
         dep.deposito_id,
         dep.produto_id,
-        pm.shelf_life_days,
+        pm.shelf_life_months,
         dep.valor_custo_sicms,
         dep.quantidade_estoque_atual
         - COALESCE(resp.quantidade_reservada, 0.0) as quantidade_estoque_atual
@@ -20,7 +20,7 @@ final as (
     select
         deposito_id,
         produto_id,
-        shelf_life_days,
+        shelf_life_months,
         valor_custo_sicms,
         quantidade_estoque_atual
     from estoque

@@ -110,8 +110,8 @@ def download_avencer_athena() -> pd.DataFrame:
     """
     Baixa os dados de vencimento de lotes do Athena e retorna um DataFrame.
     Esta função utiliza o cliente Athena para executar uma consulta SQL que recupera
-    informações sobre os lotes de produtos, incluindo ID do depósito, ID do produto,
-    numero da nota fiscal, data da entrada do lote, vida útil, custo,
+    informações sobre os lotes de produtos, incluindo ID do depósito, ID do produto, ID do grupo,
+    numero da nota fiscal, data da entrada do lote, vida útil, custo, quantidade da entrada,
     quantidade em estoque, quantidade distribuída, venda diária e data de vencimento do lote.
 
     Args:
@@ -131,10 +131,12 @@ def download_avencer_athena() -> pd.DataFrame:
             select
                 deposito_id,
                 produto_id,
+                id_grupo,
                 numero_nota_fiscal,
                 shelf_life_days,
                 valor_custo_sicms,
                 quantidade_estoque_atual,
+                quantidade_fisica,
                 quantidade_distribuida,
                 quantidade_venda_diaria,
                 CAST(data_hora_atualizacao as TIMESTAMP(3)) as data_hora_atualizacao,
@@ -169,7 +171,7 @@ def update_avencer_athena(
     )
 
     with Athena(cursor) as client:
-        client.write_dataframe(
+        client.write_table_iceberg(
             df,
             table_name=table_name,
             location=location,
@@ -190,7 +192,9 @@ if __name__ == "__main__":
             dfs.append(future.result())
 
     # NOTE: Envia os dados pro ATHENA
-    df_to = pd.concat(dfs, ignore_index=True)
+    df_to = pd.concat(dfs, ignore_index=True).assign(
+        data_hora_cadastro=pd.to_datetime("today"),
+    )
     print(f"Totais destino: {df_to.shape}")
 
     update_avencer_athena(
