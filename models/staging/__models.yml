@@ -24,3 +24,6 @@ models:
   
   - name: stg_vendas_filial
     description: Vendas por filial, dia
+  
+  - name: stg_prod_dermo
+    description: Produtos dermocosmeticos, considerar validade de 3 anos se nao for informado

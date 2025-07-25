@@ -26,6 +26,8 @@ sources:
         description: Informacoes das filiais
       - name: cosmos_v14b_dbo_categ_prd_ephdet
         description: Categorias de produtos e suas hierarquias
+      - name: cosmos_v14b_dbo_categoria_produto_novo
+        description: Categorias de produtos e suas hierarquias (nova tabela)
 
   - name: planejamento_comercial
     schema: planejamento_comercial

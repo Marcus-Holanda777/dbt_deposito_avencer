@@ -7,7 +7,8 @@ with entradas as (
         et.quantidade_fisica,
         lt.data_vencimento_lote,
         lt.quantidade_lote,
-        pb.dias_validade
+        pb.dias_validade,
+        IF(dermo.produto_id is not null, 1, 0) as dermo
     from {{ ref('stg_entrada_deposito') }} as et
     left join {{ ref('stg_base_lotes') }} as lt
         on
@@ -15,6 +16,8 @@ with entradas as (
             and et.detalhe_nota_fiscal_id = lt.detalhe_nota_fiscal_id
     left join {{ ref('stg_produto_baixo_giro') }} as pb
         on et.produto_id = pb.produto_id
+    left join {{ ref('stg_prod_dermo') }} as dermo
+        on et.produto_id = dermo.produto_id
 ),
 
 define_vencimento as (
@@ -32,6 +35,8 @@ define_vencimento as (
                 then data_vencimento_lote
             when dias_validade is not null
                 then DATE_ADD('day', dias_validade, data_hora_atualizacao)
+            when dermo = 1
+                then DATE_ADD('month', 36, data_hora_atualizacao)
             else DATE_ADD('month', 24, data_hora_atualizacao)
         end as data_vencimento_lote
     from entradas
