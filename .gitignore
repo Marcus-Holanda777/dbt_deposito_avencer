@@ -5,3 +5,5 @@ duckdb_home/
 *.duckdb
 __pycache__/
 *.env
+*.xlsx
+*$.xlsx
