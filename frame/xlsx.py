@@ -29,7 +29,6 @@ def format_columns_number(df: pd.DataFrame) -> list[Estilo]:
     PERCENTIL = """_-* #.##0,00_-;-* #.##0,00_-;_-* "-"??_-;_-@_-"""
     CURRENCY = """_-R$ * #.##0,00_-;-R$ * #.##0,00_-;_-R$ * "-"??_-;_-@_-"""
 
-    estilos = []
     columns = df.columns.to_list()
 
     intergers = df.select_dtypes(include="integer").columns
@@ -93,26 +92,18 @@ def create_table_plan(
 
             estilos = format_columns_number(df)
 
-            # TODO: Retornar o numero da coluna e celula
             num_col = sheet.range(rng).column
             num_row = sheet.range(rng).row
 
-            # TODO: Localizar a ultima linha do excel
             total_rows = sheet.cells.last_cell.row
-
-            # TODO: Localizar a ultima linha preenchida
             final_row = sheet.range((total_rows, num_col)).end("up").row
 
-            # TODO: Formatar as colunas de acordo com os estilos definidos
             for estilo in estilos:
                 start = sheet.cells(num_row, estilo.id + num_col)
                 end = sheet.cells(final_row, estilo.id + num_col)
                 sheet.range(start, end).number_format = estilo.format
 
-            # TODO: Atualizar tabelas dinamicas
             book.api.RefreshAll()
-
-            # TODO: Registrar a data de atualizacao
             sheet.range("I4").value = f"Data Relatório: {pd.Timestamp.now():%d/%m/%Y}"
 
             book.save(output)
