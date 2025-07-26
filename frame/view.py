@@ -2,6 +2,8 @@ from athena_mvsh import Athena, CursorParquetDuckdb
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from dotenv import dotenv_values
+from xlsx import create_table_plan
+
 
 CONFIG = {**dotenv_values()}
 
@@ -63,8 +65,14 @@ def export_view_excel(file: str) -> None:
         client.execute(stmt, parameters=params)
         df = client.to_pandas()
 
-    df.to_excel(file_to, index=False)
+    create_table_plan(
+        df,
+        "frame/temp/template_cd.xlsx",
+        sheet_name="Banco de Dados",
+        rng="E6",
+        output=file_to,
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     export_view_excel("banco_cd.sql")

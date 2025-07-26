@@ -1,12 +1,7 @@
 /*
- *  Dev: Marcus Holanda, Setor: Prev. Perdas
- *  
- *  1 - planejamento_comercial.dim_produtos          - dimensoes
- *  2 - master_data.modelado_cadastro_produto_filial - Produtos ativos por cd
- *  3 - cosmos_v14b_dbo_fornecedor - ressarcimento por fornecedor
- *  4 - cosmos_v14b_dbo_produto_deposito - info produto deposito
- *  
- * */
+*    Dev: Marcus Holanda, Setor: Prev. Perdas
+*    Relatorio  AVENCER CD
+*/
 
 WITH dim_comercial_prev AS (
     SELECT
@@ -247,13 +242,13 @@ SELECT
     rm.situacao_ressarcimento,
     rm.percentual_ressarcimento,
     pd.curva_fat,
+    COALESCE(fa.qtd_filiais_ativas, 0) AS qtd_filiais_ativas,
     dim.categ_nivel_01,
     dim.categ_nivel_02,
     dim.categ_nivel_03,
     dim.categ_nivel_04,
     dim.categ_nivel_05,
-    dim.data_cadastro,
-    COALESCE(fa.qtd_filiais_ativas, 0) AS qtd_filiais_ativas
+    dim.data_cadastro
 FROM base_a_vencer_cd AS base
 INNER JOIN replace_dim_comercial AS dim USING(cod_prod)
 INNER JOIN produto_deposito_dim AS pd USING (deposito, cod_prod)
