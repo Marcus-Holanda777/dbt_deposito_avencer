@@ -1,12 +1,3 @@
-/*
- *  {Dev: Marcus Holanda, Setor: Prev. Perdas}
- *
- *  0 - prevencao-perdas.cadastro_ultima_chance - cadastro uc
- *  1 - planejamento_comercial.dim_produtos          - dimensoes
- *  2 - cosmos_v14b_dbo_fornecedor - ressarcimento por fornecedor
- *
- * */
-
 WITH dim_comercial_prev AS (
     SELECT
         "codigo produto" AS cod_prod,

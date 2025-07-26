@@ -1,8 +1,3 @@
-/*
-*    Dev: Marcus Holanda, Setor: Prev. Perdas
-*    Relatorio  AVENCER CD
-*/
-
 WITH dim_comercial_prev AS (
     SELECT
         "codigo produto" AS cod_prod,
