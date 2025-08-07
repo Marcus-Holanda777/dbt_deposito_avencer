@@ -9,11 +9,7 @@ WITH dim_comercial_prev AS (
         "gerente compras" AS nome_gerente,
         "comprador" AS nome_comprador,
         "nome nível 1" AS categ_nivel_01,
-        "nome nível 2" AS categ_nivel_02,
-        "nome nível 3" AS categ_nivel_03,
-        "nome nível 4" AS categ_nivel_04,
-        "nome nível 5" AS categ_nivel_05,
-        datacadastro
+        "nome nível 2" AS categ_nivel_02
     FROM planejamento_comercial.dim_produtos
 ),
 
@@ -21,9 +17,7 @@ replace_dim_comercial AS (
     SELECT
         CAST(cod_prod AS int) AS cod_prod,
         CAST(
-            CAST(
-                IF(forn_cod_filho = 'nan', '0.0', forn_cod_filho) AS double
-            ) AS int
+            COALESCE(TRY_CAST(forn_cod_filho AS double), 0) AS int
         ) AS forn_cod_filho,
         TRANSLATE(
             REGEXP_REPLACE(
@@ -98,35 +92,7 @@ replace_dim_comercial AS (
             ),
             'ãäöüẞáäčçďéěíĺľňóôŕšťúůýžÄÖÜẞÁÄČÇĎÉĚÍĹĽŇÓÔŔŠŤÚŮÝŽ',
             'aaousaaccdeeillnoorstuuyzAOUSAACCDEEILLNOORSTUUYZ'
-        ) AS categ_nivel_02,
-        TRANSLATE(
-            REGEXP_REPLACE(
-                IF(TRIM(categ_nivel_03) = 'nan', NULL, TRIM(categ_nivel_03)),
-                ' +',
-                ' '
-            ),
-            'ãäöüẞáäčçďéěíĺľňóôŕšťúůýžÄÖÜẞÁÄČÇĎÉĚÍĹĽŇÓÔŔŠŤÚŮÝŽ',
-            'aaousaaccdeeillnoorstuuyzAOUSAACCDEEILLNOORSTUUYZ'
-        ) AS categ_nivel_03,
-        TRANSLATE(
-            REGEXP_REPLACE(
-                IF(TRIM(categ_nivel_04) = 'nan', NULL, TRIM(categ_nivel_04)),
-                ' +',
-                ' '
-            ),
-            'ãäöüẞáäčçďéěíĺľňóôŕšťúůýžÄÖÜẞÁÄČÇĎÉĚÍĹĽŇÓÔŔŠŤÚŮÝŽ',
-            'aaousaaccdeeillnoorstuuyzAOUSAACCDEEILLNOORSTUUYZ'
-        ) AS categ_nivel_04,
-        TRANSLATE(
-            REGEXP_REPLACE(
-                IF(TRIM(categ_nivel_05) = 'nan', NULL, TRIM(categ_nivel_05)),
-                ' +',
-                ' '
-            ),
-            'ãäöüẞáäčçďéěíĺľňóôŕšťúůýžÄÖÜẞÁÄČÇĎÉĚÍĹĽŇÓÔŔŠŤÚŮÝŽ',
-            'aaousaaccdeeillnoorstuuyzAOUSAACCDEEILLNOORSTUUYZ'
-        ) AS categ_nivel_05,
-        CAST(datacadastro AS date) AS data_cadastro
+        ) AS categ_nivel_02
     FROM dim_comercial_prev
 ),
 
@@ -161,16 +127,13 @@ SELECT
     ARBITRARY(dim.forn_nm_comercial) AS forn_nm_comercial,
     ARBITRARY(dim.nome_gerente) AS nome_gerente,
     ARBITRARY(dim.nome_comprador) AS nome_comprador,
-    SUM(saldo) AS saldo,
+    CAST(SUM(saldo) AS INT) AS saldo,
     SUM(valor_saldo) AS valor_saldo,
     recolher,
     ARBITRARY(situacao_ressarcimento) AS situacao_ressarcimento,
     ARBITRARY(percentual_ressarcimento) AS percentual_ressarcimento,
     ARBITRARY(dim.categ_nivel_01) AS categ_nivel_01,
-    ARBITRARY(dim.categ_nivel_02) AS categ_nivel_02,
-    ARBITRARY(dim.categ_nivel_03) AS categ_nivel_03,
-    ARBITRARY(dim.categ_nivel_04) AS categ_nivel_04,
-    ARBITRARY(dim.categ_nivel_05) AS categ_nivel_05
+    ARBITRARY(dim.categ_nivel_02) AS categ_nivel_02
 FROM base_a_vencer_loja AS base
 INNER JOIN
     replace_dim_comercial AS dim

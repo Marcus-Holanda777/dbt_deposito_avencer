@@ -59,23 +59,30 @@ def format_columns_number(df: pd.DataFrame) -> list[Estilo]:
 
 
 def create_table_plan(
-    df: pd.DataFrame, template: str, *, sheet_name: str, rng: str, output: str
+    df: pd.DataFrame,
+    template: str,
+    *,
+    sheet_name: str,
+    rng: str,
+    cell_title: str,
+    output: str,
 ) -> None:
     """
-    Cria uma tabela no Excel a partir de um DataFrame, aplicando formatação específica
-    para colunas numéricas. A função abre um modelo de Excel, escreve os dados do DataFrame
-    em uma faixa específica, formata as colunas de acordo com os estilos definidos e salva
-    o arquivo em um novo local.
+    Cria uma tabela em um arquivo Excel a partir de um DataFrame, aplicando formatação
+    específica para colunas numéricas. A função abre um template Excel, insere os dados
+    do DataFrame em um intervalo específico, aplica formatação às colunas numéricas e
+    salva o arquivo Excel resultante.
 
     Args:
-        df (pd.DataFrame): DataFrame contendo os dados a serem exportados.
-        template (str): Caminho para o modelo de Excel a ser utilizado.
-        sheet_name (str): Nome da planilha onde os dados serão escritos.
-        rng (str): Faixa de células onde os dados do DataFrame serão inseridos.
-        output (str): Caminho para o arquivo Excel de saída.
-    Returns:
-        None: A função salva o DataFrame formatado em um arquivo Excel.
+        df (pd.DataFrame): DataFrame contendo os dados a serem inseridos na tabela.
+        template (str): Caminho para o template Excel a ser utilizado.
+        sheet_name (str): Nome da planilha onde os dados serão inseridos.
+        rng (str): Intervalo de células onde os dados serão colocados.
+        cell_title (str): Célula onde o título será colocado.
+        output (str): Caminho do arquivo Excel de saída.
 
+    Returns:
+        None: Esta função não retorna nada, mas cria um arquivo Excel com os dados formatados.
     """
     with xw.App(visible=False, add_book=False) as app:
         with app.properties(
@@ -104,7 +111,9 @@ def create_table_plan(
                 sheet.range(start, end).number_format = estilo.format
 
             book.api.RefreshAll()
-            sheet.range("I4").value = f"Data Relatório: {pd.Timestamp.now():%d/%m/%Y}"
+            sheet.range(
+                cell_title
+            ).value = f"Data Relatório: {pd.Timestamp.now():%d/%m/%Y}"
 
             book.save(output)
             book.close()

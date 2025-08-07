@@ -22,27 +22,29 @@ def read_stmt(file: str) -> str:
         return f.read()
 
 
-def export_view_excel(file: str) -> None:
+def export_view_excel(
+    file: str, template: str, *, sheet_name: str, rng: str, cell_title: str
+) -> None:
     """
-    Exporta os dados de uma view do Athena para um arquivo Excel.
-
-    Esta função executa uma consulta SQL definida em um arquivo, obtém os resultados
-    e os salva em um arquivo Excel com um nome baseado na data e hora atual.
-    Se o arquivo SQL for "banco_cd.sql", a função ajusta os parâmetros de data para
-    exportar dados específicos do banco de CD, considerando o início e o fim do período
-    de um ano a partir do primeiro dia do próximo mês.
+    Exporta uma consulta SQL para um arquivo Excel, aplicando um template específico.
 
     Args:
-        file (str): Nome do arquivo SQL que contém a consulta para exportação.
+        file (str): Nome do arquivo SQL a ser executado.
+        template (str): Caminho para o template Excel a ser utilizado.
+        sheet_name (str): Nome da planilha no Excel onde os dados serão inseridos.
+        rng (str): Intervalo de células onde os dados serão colocados.
+        cell_title (str): Célula onde o título será colocado.
+
     Returns:
-        None: A função salva o DataFrame resultante em um arquivo Excel.
+        None: Esta função não retorna nada, mas cria um arquivo Excel com os dados consultados.
     """
 
     name, __ = file.split(".")
     stmt = read_stmt(file)
-    params = None
+    params = {}
 
     file_to = f"frame/output/{name}_{datetime.now():%d%m%Y_%H%M%S}.xlsx"
+    msg = f"Exportando dados [{name}] ... {file_to}"
 
     if name == "banco_cd":
         start = (
@@ -54,8 +56,9 @@ def export_view_excel(file: str) -> None:
             day=31, month=12, hour=23, minute=59, second=59, microsecond=999999
         )
 
-        params = {"start": start, "end": end}
-        print(f"Exportando dados do banco de CD... {start} - {end}")
+        params |= {"start": start, "end": end}
+    
+    print(f"{msg} ...", *params.values())
 
     cursor = CursorParquetDuckdb(
         CONFIG.get("s3_stanging_dir"), result_reuse_enable=True
@@ -67,12 +70,27 @@ def export_view_excel(file: str) -> None:
 
     create_table_plan(
         df,
-        "frame/temp/template_cd.xlsx",
-        sheet_name="Banco de Dados",
-        rng="E6",
+        template,
+        sheet_name=sheet_name,
+        rng=rng,
+        cell_title=cell_title,
         output=file_to,
     )
 
 
 if __name__ == "__main__":
-    export_view_excel("banco_cd.sql")
+    export_view_excel(
+        "banco_cd.sql",
+        "frame/temp/template_cd.xlsx",
+        sheet_name="Banco de Dados",
+        rng="E6",
+        cell_title="I4",
+    )
+
+    export_view_excel(
+        "banco_loja.sql",
+        "frame/temp/template_loja.xlsx",
+        sheet_name="Banco de Dados",
+        rng="A6",
+        cell_title="D4",
+    )
