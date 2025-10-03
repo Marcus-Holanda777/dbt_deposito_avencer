@@ -34,7 +34,9 @@ define_vencimento as (
                 and data_vencimento_lote > data_hora_atualizacao
                 then data_vencimento_lote
             when dias_validade is not null
-                then DATE_ADD('day', dias_validade, data_hora_atualizacao)
+                -- ALTERADO PARA 24 MESES
+                -- then DATE_ADD('day', dias_validade, data_hora_atualizacao)
+                then DATE_ADD('month', 24, data_hora_atualizacao)
             when dermo = 1
                 then DATE_ADD('month', 36, data_hora_atualizacao)
             else DATE_ADD('month', 24, data_hora_atualizacao)

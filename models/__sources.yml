@@ -2,9 +2,9 @@ version: 2
 
 sources:
   - name: modelled
-    schema: modelled
+    schema: prevencao-perdas
     description: Bases brutas do deposito Avencer
-    tables:     
+    tables:
       - name: cosmos_v14b_dbo_nota_entr_cab
         description: Cabecalho das notas de entrada
       - name: cosmos_v14b_dbo_nota_entr_det
