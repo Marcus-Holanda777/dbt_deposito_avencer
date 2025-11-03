@@ -13,7 +13,7 @@ WITH dim_comercial_prev AS (
         "nome nível 3" AS categ_nivel_03,
         "nome nível 4" AS categ_nivel_04,
         "nome nível 5" AS categ_nivel_05,
-        datacadastro
+        DATE_PARSE(datacadastro, '%d/%m/%Y') as datacadastro
     FROM planejamento_comercial.dim_produtos
 ),
 
