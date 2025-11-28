@@ -2,7 +2,8 @@ from athena_mvsh import Athena, CursorParquetDuckdb
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from dotenv import dotenv_values
-from xlsx import create_table_plan
+from xlsx import create_table_plan, create_table_plan_full
+import pandas as pd
 
 
 CONFIG = {**dotenv_values()}
@@ -24,7 +25,7 @@ def read_stmt(file: str) -> str:
 
 def export_view_excel(
     file: str, template: str, *, sheet_name: str, rng: str, cell_title: str
-) -> None:
+) -> pd.DataFrame:
     """
     Exporta uma consulta SQL para um arquivo Excel, aplicando um template específico.
 
@@ -57,7 +58,7 @@ def export_view_excel(
         )
 
         params |= {"start": start, "end": end}
-    
+
     print(f"{msg} ...", *params.values())
 
     cursor = CursorParquetDuckdb(
@@ -77,9 +78,11 @@ def export_view_excel(
         output=file_to,
     )
 
+    return df
+
 
 if __name__ == "__main__":
-    export_view_excel(
+    df_cd = export_view_excel(
         "banco_cd.sql",
         "frame/temp/template_cd.xlsx",
         sheet_name="Banco de Dados",
@@ -87,10 +90,19 @@ if __name__ == "__main__":
         cell_title="I4",
     )
 
-    export_view_excel(
+    df_loja = export_view_excel(
         "banco_loja.sql",
         "frame/temp/template_loja.xlsx",
         sheet_name="Banco de Dados",
         rng="A6",
         cell_title="D4",
+    )
+
+    create_table_plan_full(
+        {"CD": df_cd, "LOJA": df_loja},
+        "frame/temp/template_loja_cd.xlsx",
+        rng="A10",
+        rng_values="L10",
+        cell_title="C3",
+        output=f"frame/output/plan_consolidado_{datetime.now():%d%m%Y_%H%M%S}.xlsx",
     )

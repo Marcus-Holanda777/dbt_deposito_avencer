@@ -13,7 +13,7 @@ WITH dim_comercial_prev AS (
         "nome nível 3" AS categ_nivel_03,
         "nome nível 4" AS categ_nivel_04,
         "nome nível 5" AS categ_nivel_05,
-        DATE_PARSE(datacadastro, '%d/%m/%Y') as datacadastro
+        CAST(datacadastro AS TIMESTAMP(3)) as datacadastro
     FROM planejamento_comercial.dim_produtos
 ),
 
@@ -226,11 +226,11 @@ SELECT
     base.venda_mensal_loja,
     base.quantidade_entrada,
     base.quantidade_estoque,
-    base.saldo_recolhimento,
+    base.saldo_recolhimento as saldo,
     base.quantidade_entrada_restante,
     base.valor_entrada,
     base.valor_estoque,
-    base.valor_saldo_recolhimento,
+    base.valor_saldo_recolhimento as valor_saldo,
     base.data_vencimento,
     base.data_recolhimento,
     base.pme_dias,

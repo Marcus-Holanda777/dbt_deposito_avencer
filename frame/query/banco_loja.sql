@@ -9,7 +9,10 @@ WITH dim_comercial_prev AS (
         "gerente compras" AS nome_gerente,
         "comprador" AS nome_comprador,
         "nome nível 1" AS categ_nivel_01,
-        "nome nível 2" AS categ_nivel_02
+        "nome nível 2" AS categ_nivel_02,
+        "nome nível 3" AS categ_nivel_03,
+        "nome nível 4" AS categ_nivel_04,
+        "nome nível 5" AS categ_nivel_05
     FROM planejamento_comercial.dim_produtos
 ),
 
@@ -92,7 +95,34 @@ replace_dim_comercial AS (
             ),
             'ãäöüẞáäčçďéěíĺľňóôŕšťúůýžÄÖÜẞÁÄČÇĎÉĚÍĹĽŇÓÔŔŠŤÚŮÝŽ',
             'aaousaaccdeeillnoorstuuyzAOUSAACCDEEILLNOORSTUUYZ'
-        ) AS categ_nivel_02
+        ) AS categ_nivel_02,
+        TRANSLATE(
+            REGEXP_REPLACE(
+                IF(TRIM(categ_nivel_03) = 'nan', NULL, TRIM(categ_nivel_03)),
+                ' +',
+                ' '
+            ),
+            'ãäöüẞáäčçďéěíĺľňóôŕšťúůýžÄÖÜẞÁÄČÇĎÉĚÍĹĽŇÓÔŔŠŤÚŮÝŽ',
+            'aaousaaccdeeillnoorstuuyzAOUSAACCDEEILLNOORSTUUYZ'
+        ) AS categ_nivel_03,
+        TRANSLATE(
+            REGEXP_REPLACE(
+                IF(TRIM(categ_nivel_04) = 'nan', NULL, TRIM(categ_nivel_04)),
+                ' +',
+                ' '
+            ),
+            'ãäöüẞáäčçďéěíĺľňóôŕšťúůýžÄÖÜẞÁÄČÇĎÉĚÍĹĽŇÓÔŔŠŤÚŮÝŽ',
+            'aaousaaccdeeillnoorstuuyzAOUSAACCDEEILLNOORSTUUYZ'
+        ) AS categ_nivel_04,
+        TRANSLATE(
+            REGEXP_REPLACE(
+                IF(TRIM(categ_nivel_05) = 'nan', NULL, TRIM(categ_nivel_05)),
+                ' +',
+                ' '
+            ),
+            'ãäöüẞáäčçďéěíĺľňóôŕšťúůýžÄÖÜẞÁÄČÇĎÉĚÍĹĽŇÓÔŔŠŤÚŮÝŽ',
+            'aaousaaccdeeillnoorstuuyzAOUSAACCDEEILLNOORSTUUYZ'
+        ) AS categ_nivel_05
     FROM dim_comercial_prev
 ),
 
@@ -114,6 +144,7 @@ base_a_vencer_loja AS (
     SELECT
         filial,
         cod_prod,
+        CAST(dt_vencimento AS timestamp(3)) AS dt_vencimento,
         CAST(recolher AS timestamp(3)) AS recolher,
         saldo,
         valor_saldo
@@ -129,14 +160,18 @@ SELECT
     ARBITRARY(dim.nome_comprador) AS nome_comprador,
     CAST(SUM(saldo) AS INT) AS saldo,
     SUM(valor_saldo) AS valor_saldo,
-    recolher,
+    recolher as data_recolhimento,
+    dt_vencimento,
     ARBITRARY(situacao_ressarcimento) AS situacao_ressarcimento,
     ARBITRARY(percentual_ressarcimento) AS percentual_ressarcimento,
     ARBITRARY(dim.categ_nivel_01) AS categ_nivel_01,
-    ARBITRARY(dim.categ_nivel_02) AS categ_nivel_02
+    ARBITRARY(dim.categ_nivel_02) AS categ_nivel_02,
+    ARBITRARY(dim.categ_nivel_03) AS categ_nivel_03,
+    ARBITRARY(dim.categ_nivel_04) AS categ_nivel_04,
+    ARBITRARY(dim.categ_nivel_05) AS categ_nivel_05
 FROM base_a_vencer_loja AS base
 INNER JOIN
     replace_dim_comercial AS dim
     ON base.cod_prod = dim.cod_prod
 LEFT JOIN ressarcimento USING (forn_cod_filho)
-GROUP BY 1, 2, 9
+GROUP BY 1, 2, 9, 10

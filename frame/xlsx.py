@@ -117,3 +117,81 @@ def create_table_plan(
 
             book.save(output)
             book.close()
+
+
+def create_table_plan_full(
+    dfs: dict[str, pd.DataFrame],
+    template: str,
+    *,
+    rng: str,
+    rng_values: str,
+    cell_title: str,
+    output: str,
+) -> None:
+    """
+    Cria múltiplas tabelas em um arquivo Excel a partir de um dicionário de DataFrames,
+    aplicando formatação específica para colunas numéricas. A função abre um template
+    Excel, insere os dados de cada DataFrame em intervalos específicos de suas respectivas
+    planilhas, aplica formatação às colunas numéricas e salva o arquivo Excel resultante.
+
+    Args:
+        dfs (dict[str, pd.DataFrame]): Dicionário onde as chaves são os nomes das planilhas
+            e os valores são os DataFrames contendo os dados a serem inseridos.
+        template (str): Caminho para o template Excel a ser utilizado.
+        rng (str): Intervalo de células onde os dados principais serão colocados.
+        rng_values (str): Intervalo de células onde os valores serão colocados.
+        cell_title (str): Célula onde o título será colocado.
+        output (str): Caminho do arquivo Excel de saída.
+        
+    Returns:
+        None: Esta função não retorna nada, mas cria um arquivo Excel com os dados formatados.
+    """
+
+    def write_sheet_df(sheet: xw.Sheet, rng: str, df: pd.DataFrame) -> None:
+        sheet[rng].options(
+            header=False,
+            index=False,
+            chunk_size=10_000,
+        ).value = df
+
+    with xw.App(visible=False, add_book=False) as app:
+        with app.properties(
+            display_alerts=False, enable_events=False, screen_updating=False
+        ):
+            book = app.books.open(template)
+
+            for sheet_name, df in dfs.items():
+                print(f"Processando planilha: {sheet_name} ...")
+                df_transform = (
+                    df.loc[lambda _df: _df["saldo"] > 0, :]
+                    .groupby(
+                        [
+                            "cod_prod",
+                            "nome_prod",
+                            "nome_comprador",
+                            "nome_gerente",
+                            "forn_nm_comercial",
+                            "data_recolhimento",
+                            "categ_nivel_02",
+                            "categ_nivel_03",
+                            "categ_nivel_04",
+                            "categ_nivel_05",
+                        ],
+                        dropna=False,
+                    )
+                    .agg({"saldo": "sum", "valor_saldo": "sum"})
+                    .reset_index()
+                )
+
+                sheet = book.sheets[sheet_name]
+                write_sheet_df(sheet, rng, df_transform.iloc[:, :-2])
+                write_sheet_df(sheet, rng_values, df_transform.iloc[:, -2:])
+
+                sheet.range(
+                    cell_title
+                ).value = f"Atualizado: {pd.Timestamp.now():%d/%m/%Y}"
+
+            book.save(output)
+            book.close()
+
+            print(f"Arquivo salvo em: {output}")

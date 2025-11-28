@@ -60,3 +60,10 @@ O objetivo principal é:
 - Testes de qualidade são aplicados em dbt, garantindo integridade e coerência dos dados.
 - A etapa Pandas inclui validações para assegurar o cumprimento das regras PVPS e consistência dos cálculos.
 - Recomenda-se monitorar logs e resultados para ajustes finos conforme evolução dos dados.
+
+
+## ❌ Ajustes !
+
+- [x] LOJA incluir data de vencimento
+- [x] LOJA incluir categoria nivel 1 ate 5
+- [ ] criar planilha consolidada
